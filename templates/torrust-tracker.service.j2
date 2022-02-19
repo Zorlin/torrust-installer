@@ -1,0 +1,13 @@
+[Unit]
+Description=Torrust BitTorrent tracker
+After=network.target
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=1
+ExecStart=/opt/torrust/torrust-tracker/target/release/torrust-tracker
+WorkingDirectory=/opt/torrust/torrust-tracker
+
+[Install]
+WantedBy=multi-user.target

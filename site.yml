@@ -34,6 +34,7 @@
         group: root
         mode: 0755
 
+    # Torrust Tracker
     - name: Check out torrust-tracker
       git:
         repo: https://github.com/torrust/torrust-tracker.git
@@ -45,4 +46,56 @@
         chdir: /opt/torrust/torrust-tracker
         creates: /opt/torrust/torrust-tracker/target/release/torrust-tracker
 
-# ./target/release/torrust-tracker
+    - name: Run torrust-tracker once to generate configs
+      shell:
+        cmd: ./target/release/torrust-tracker
+        chdir: /opt/torrust/torrust-tracker
+        creates: /opt/torrust/torrust-tracker/config.toml
+      ignore_errors: yes
+
+    - name: Install torrust systemd service
+      template:
+        src: torrust-tracker.service.j2
+        dest: /etc/systemd/system/torrust-tracker.service
+        owner: root
+        group: root
+        mode: 0755
+
+    # Torrust Index
+    - name: Setup Node.js 16.x apt repositories
+      shell:
+        cmd: curl -fsSL https://deb.nodesource.com/setup_16.x | bash -
+        creates: /etc/apt/sources.list.d/nodesource.list
+
+    - name: Install packages needed for torrust-index
+      package:
+        name:
+          - nodejs
+          - nginx
+
+    - name: Check out torrust
+      git:
+        repo: https://github.com/torrust/torrust.git
+        dest: /opt/torrust/torrust
+
+    - name: Configure database backend
+      copy:
+        dest: "/opt/torrust/torrust/backend/.env"
+        content: "DATABASE_URL=sqlite://data.db?mode=rwc"
+
+    - name: Install sqlx-cli
+      shell:
+        cmd: . "$HOME/.cargo/env" && cargo install sqlx-cli
+        creates: /root/.cargo/bin/sqlx
+
+    - name: Initialise database
+      shell:
+        cmd: . "$HOME/.cargo/env" && sqlx db setup
+        chdir: /opt/torrust/torrust/backend
+        creates: /opt/torrust/torrust/backend/data.db
+
+    - name: Build torrust backend
+      shell:
+        cmd: . "$HOME/.cargo/env" && cargo build --release
+        chdir: /opt/torrust/torrust/backend
+        creates: /opt/torrust/torrust/backend/target/release/torrust

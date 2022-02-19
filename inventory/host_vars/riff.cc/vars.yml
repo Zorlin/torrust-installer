@@ -1,3 +1,5 @@
 ---
 # Variables used for riff.cc
 test_string: "This is a test!"
+
+your_domain: "riff.cc"
