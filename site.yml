@@ -30,6 +30,7 @@
     - name: Install Rust
       shell:
         cmd: curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+        creates: /root/.cargo/bin/rustc
 
     - name: Create Torrust folder in /opt/
       file:
@@ -45,15 +46,9 @@
         dest: /opt/torrust/torrust-tracker
 
     - name: Build torrust-tracker
-      command:
-        cmd: cargo build --release
+      shell:
+        cmd: . "$HOME/.cargo/env" && cargo build --release
         chdir: /opt/torrust/torrust-tracker
-
-# mkdir /opt/torrust
-# cd /opt/torrust
-# git clone https://github.com/torrust/torrust-tracker.git
-# cd torrust-tracker
-
-# cargo build --release
+        creates: /opt/torrust/torrust-tracker/target/release/torrust-tracker
 
 # ./target/release/torrust-tracker
