@@ -3,12 +3,6 @@
   hosts: torrust
   become: true
 
-  pre_tasks:
-    - name: Print Ansible info useful for development
-      debug:
-        msg:
-          - "{{ ansible_distribution }} {{ ansible_distribution_version }}"
-
   tasks:
     - name: Update apt cache if older than a day
       apt:
