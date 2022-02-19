@@ -219,3 +219,28 @@
       command:
         cmd: certbot certonly --nginx --agree-tos -n -m {{ certbot_email }} -d {{ your_domain }}
         creates: /etc/letsencrypt/live/{{ your_domain }}/fullchain.pem
+
+    # Configure nginx again to pick up TLS/SSL configuration changes.
+    - name: Check if we think we have a valid TLS/SSL certificate (again)
+      stat:
+        path: /etc/letsencrypt/live/{{ your_domain }}/fullchain.pem
+      register: ssl_enabled
+
+    - name: Copy nginx configuration file
+      template:
+        src: torrust.conf.j2
+        dest: /etc/nginx/sites-available/torrust.conf
+        owner: root
+        group: root
+        mode: 0644
+
+    - name: Reload nginx
+      systemd:
+        name: nginx
+        state: reloaded
+
+    - name: Success!
+      debug:
+        msg:
+          - "If you're reading this, Torrust has been successfully deployed to site {{ your_domain }}."
+          - "Let us know if it worked, and feel free to reach out if you need help. Enjoy!"
