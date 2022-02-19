@@ -2,7 +2,6 @@
 - name: Install Torrust
   hosts: torrust
   become: true
-  user: root
 
   pre_tasks:
     - name: Print Ansible info useful for development
@@ -11,6 +10,50 @@
           - "{{ ansible_distribution }} {{ ansible_distribution_version }}"
 
   tasks:
-    - name: Print debug string
-      debug:
-        msg: "Test string {{ test_string }}"
+    - name: Update apt cache if older than a day
+      apt:
+        update_cache: yes
+        cache_valid_time: 86400
+
+    - name: Install some pre-requisites
+      package:
+        name:
+          - git
+          - curl
+          - build-essential
+          - tmux
+          - pkg-config
+          - libssl-dev
+          - libsqlite3-dev
+
+    # shoutout to https://dentrassi.de/2020/06/17/headless-installation-of-cargo-and-rust/ for the silent install method
+    - name: Install Rust
+      shell:
+        cmd: curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+
+    - name: Create Torrust folder in /opt/
+      file:
+        path: /opt/torrust/
+        state: directory
+        owner: root
+        group: root
+        mode: 0755
+
+    - name: Check out torrust-tracker
+      git:
+        repo: https://github.com/torrust/torrust-tracker.git
+        dest: /opt/torrust/torrust-tracker
+
+    - name: Build torrust-tracker
+      command:
+        cmd: cargo build --release
+        chdir: /opt/torrust/torrust-tracker
+
+# mkdir /opt/torrust
+# cd /opt/torrust
+# git clone https://github.com/torrust/torrust-tracker.git
+# cd torrust-tracker
+
+# cargo build --release
+
+# ./target/release/torrust-tracker
