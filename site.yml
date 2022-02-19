@@ -59,13 +59,18 @@
         regexp: 'admin = "MyAccessToken"'
         line: 'admin = "{{ http_api_access_token }}"'
 
-    - name: Install torrust systemd service
+    - name: Install torrust-tracker systemd service
       template:
         src: torrust-tracker.service.j2
         dest: /etc/systemd/system/torrust-tracker.service
         owner: root
         group: root
         mode: 0755
+
+    - name: Start torrust-tracker systemd service
+      systemd:
+        name: torrust-tracker
+        state: started
 
     # Torrust Index
     - name: Setup Node.js 16.x apt repositories
@@ -130,3 +135,87 @@
         path: /opt/torrust/torrust/backend/config.toml
         regexp: '^secret_key = '
         line: 'secret_key = "{{ secret_key }}"'
+
+    - name: Install torrust-backend systemd service
+      template:
+        src: torrust-backend.service.j2
+        dest: /etc/systemd/system/torrust-backend.service
+        owner: root
+        group: root
+        mode: 0755
+
+    - name: Start torrust-backend systemd service
+      systemd:
+        name: torrust-backend
+        state: started
+
+    # Torrust frontend
+    - name: Configure torrust frontend
+      copy:
+        dest: "/opt/torrust/torrust/frontend/.env"
+        content: "VITE_API_BASE_URL=https://{{ your_domain }}/api"
+
+    - name: Install npm dependencies
+      command:
+        cmd: npm i
+        chdir: /opt/torrust/torrust/frontend/
+        creates: /opt/torrust/torrust/frontend/dist/index.html
+
+    - name: Run npm build
+      command:
+        cmd: npm run build
+        chdir: /opt/torrust/torrust/frontend/
+        creates: /opt/torrust/torrust/frontend/dist/index.html
+
+    # Configure nginx
+    - name: Check if we think we have a valid TLS/SSL certificate
+      stat:
+        path: /etc/letsencrypt/live/{{ your_domain }}/fullchain.pem
+      register: ssl_enabled
+
+    - name: Copy nginx configuration file
+      template:
+        src: torrust.conf.j2
+        dest: /etc/nginx/sites-available/torrust.conf
+        owner: root
+        group: root
+        mode: 0644
+
+    - name: Enable nginx configuration file
+      file:
+        src: /etc/nginx/sites-available/torrust.conf
+        dest: /etc/nginx/sites-enabled/torrust.conf
+        state: link
+        owner: root
+        group: root
+        mode: 0644
+
+    - name: Reload nginx
+      systemd:
+        name: nginx
+        state: reloaded
+
+    # Install certbot
+    - name: Install snapd
+      package:
+        name: snapd
+        state: present
+
+    - name: Install certbot
+      command:
+        cmd: snap install --classic certbot
+        creates: /snap/bin/certbot
+
+    - name: Link certbot executable into /usr/bin
+      file:
+        src: /snap/bin/certbot
+        dest: /usr/bin/certbot
+        state: link
+        owner: root
+        group: root
+        mode: 0755
+
+    - name: Run certbot to request TLS/SSL certificates for our site
+      command:
+        cmd: certbot certonly --nginx --agree-tos -n -m {{ certbot_email }} -d {{ your_domain }}
+        creates: /etc/letsencrypt/live/{{ your_domain }}/fullchain.pem

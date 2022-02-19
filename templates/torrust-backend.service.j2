@@ -1,0 +1,13 @@
+[Unit]
+Description=Torrust BitTorrent indexer
+After=network.target
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=1
+ExecStart=/opt/torrust/torrust/backend/target/release/torrust
+WorkingDirectory=/opt/torrust/torrust/backend
+
+[Install]
+WantedBy=multi-user.target

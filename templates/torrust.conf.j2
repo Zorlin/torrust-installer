@@ -1,0 +1,30 @@
+server {
+    if ($host = {{ your_domain }}) {
+        return 301 https://$host$request_uri;
+    }
+    listen 80;
+    server_name {{ your_domain }};
+    return 301 https://$host$request_uri;
+}
+
+{% if ssl_enabled is not defined %}
+{% set ssl_enabled = false %}
+{% endif %}
+
+{% if ssl_enabled %}
+server {
+    listen 443 ssl;
+    server_name {{ your_domain }};
+    ssl_certificate /etc/letsencrypt/live/{{ your_domain }}/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/{{ your_domain }}/privkey.pem;
+
+    root /opt/torrust/torrust/frontend/dist/;
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
+    location /api/ {
+        proxy_pass https://{{ your_domain }}:3000/;
+    }
+}
+{% endif %}
