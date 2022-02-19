@@ -53,6 +53,12 @@
         creates: /opt/torrust/torrust-tracker/config.toml
       ignore_errors: yes
 
+    - name: Configure torrust-tracker
+      lineinfile:
+        path: /opt/torrust/torrust-tracker/config.toml
+        regexp: 'admin = "MyAccessToken"'
+        line: 'admin = "{{ http_api_access_token }}"'
+
     - name: Install torrust systemd service
       template:
         src: torrust-tracker.service.j2
@@ -99,3 +105,28 @@
         cmd: . "$HOME/.cargo/env" && cargo build --release
         chdir: /opt/torrust/torrust/backend
         creates: /opt/torrust/torrust/backend/target/release/torrust
+
+    - name: Run torrust backend once to generate configs
+      shell:
+        cmd: ./target/release/torrust
+        chdir: /opt/torrust/torrust/backend
+        creates: /opt/torrust/torrust/backend/config.toml
+      ignore_errors: yes
+
+    - name: Configure UDP tracker URL
+      lineinfile:
+        path: /opt/torrust/torrust/backend/config.toml
+        regexp: 'url = "udp://localhost:6969"'
+        line: 'url = "udp://{{ tracker_url }}:6969"'
+
+    - name: Configure tracker API token
+      lineinfile:
+        path: /opt/torrust/torrust/backend/config.toml
+        regexp: 'token = "MyAccessToken"'
+        line: 'token = "{{ http_api_access_token }}"'
+
+    - name: Configure secret key
+      lineinfile:
+        path: /opt/torrust/torrust/backend/config.toml
+        regexp: '^secret_key = '
+        line: 'secret_key = "{{ secret_key }}"'

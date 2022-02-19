@@ -1,5 +1,6 @@
 ---
 # Variables used for riff.cc
-test_string: "This is a test!"
 
+# Set URLs for the site and tracker
 your_domain: "riff.cc"
+tracker_url: "{{ your_domain }}"
