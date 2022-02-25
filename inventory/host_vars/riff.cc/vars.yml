@@ -3,4 +3,12 @@
 
 # Set URLs for the site and tracker
 your_domain: "riff.cc"
+# Leave this setting as-is to make your tracker use the same URL as your site.
 tracker_url: "{{ your_domain }}"
+
+# Used for internal authentication.
+http_api_access_token: this-is-an-example-token-please-change-me
+secret_key: this-is-an-example-secret-please-change-me
+
+# Used to receive email alerts about expiring Let's Encrypt certificates.
+certbot_email: example@protonmail.com

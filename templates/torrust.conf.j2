@@ -11,7 +11,7 @@ server {
 {% set ssl_enabled = false %}
 {% endif %}
 
-{% if ssl_enabled %}
+{% if ssl_enabled.stat.exists %}
 server {
     listen 443 ssl;
     server_name {{ your_domain }};
