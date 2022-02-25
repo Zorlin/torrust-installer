@@ -5,7 +5,7 @@ This is an Ansible-based installer for [Torrust](https://github.com/torrust/torr
 
 You will need the following:
 
-* A computer with Ansible installed (hint: sudo apt install ansible or follow [these directions](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html#installing-ansible-on-specific-operating-systems)).
+* A computer with Ansible installed (hint: `sudo apt install ansible` or follow [these directions](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html#installing-ansible-on-specific-operating-systems)).
 * A server you wish to install Torrust on, with a domain name pointed at the server via DNS.
 
 ## Getting started
@@ -13,7 +13,7 @@ You will need the following:
 Check out a copy of this repository.
 
 ```
-git clone https://github.com/zorlin/torrust-installer
+git clone https://github.com/torrust/ansible-torrust-installer
 cd torrust-installer
 ```
 
