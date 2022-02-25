@@ -2,6 +2,7 @@
 This is an Ansible-based installer for [Torrust](https://github.com/torrust/torrust). You can use it to set up a Torrust private tracker with minimal effort.
 
 Here it is in action:
+
 [![asciicast](https://asciinema.org/a/zlvMM1ehO1E7zFfwF6YAFWhWG.svg)](https://asciinema.org/a/zlvMM1ehO1E7zFfwF6YAFWhWG)
 
 ## Requirements
